@@ -1,0 +1,170 @@
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8">
+    <title>live camera</title>
+    <link href="/web/resource/bootstrap3.3.0.css" rel="stylesheet">
+    <script src="/web/resource/jquery3.1.0.js"></script>
+    <script src="/web/resource/bootsrtap3.3.0.js"></script>
+    <style type="text/css">
+        video{
+            height: 300px;
+            width: 300px;
+        };
+        canvas{
+            height: 300px;
+            width: 300px;
+        };
+        img{
+            height: 300px;
+            width: 300px;
+        };
+    </style>
+</head>
+<body>
+    <div id="reminderCameraSuccess" class="alert alert-success alert-dismissable text-center">
+        <button type="button" class="close" data-dismiss="alert"
+                aria-hidden="true">
+            &times;
+        </button>
+        摄像头调用成功
+    </div>
+    <div id="reminderCamera" class="alert alert-danger alert-dismissable text-center">
+        <button type="button" class="close" data-dismiss="alert"
+                aria-hidden="true">
+            &times;
+        </button>
+        摄像头调用失败
+    </div>
+    <div id="reminderServer" class="alert alert-danger alert-dismissable text-center">
+        <button type="button" class="close" data-dismiss="alert"
+                aria-hidden="true">
+            &times;
+        </button>
+        连接服务器失败
+    </div>
+    <div class="container">
+        <div class="row clearfix">
+            <div class="col-md-12 column">
+                <nav class="navbar navbar-default" role="navigation">
+                    <div class="navbar-header">
+                    <span class="navbar-brand">Aaron Live Room</span>
+                    <span class="navbar-brand">Now Online Number Is <span id="onlineNum">....</span></span>
+                    </div>
+                    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+                    </div>
+                </nav>
+            </div>
+            <div id="livearea" class="col-md-12">
+                <div class="col-md-3" >
+                    <div class="alert alert-success">ss</div>
+                    <video autoplay id="sourcevid" style="border:solid;"></video>
+                </div>
+            </div>
+            <canvas class="col-md-3" id="output" ></canvas>
+        </div>
+    </div>
+</body>
+</html>
+<script type="text/javascript">
+    $("#reminderServer").hide();
+    $("#reminderCamera").hide();
+    $("#reminderCameraSuccess").hide();
+    $("canvas").hide();
+</script>
+<script type="text/javascript">
+    function receive(data){
+        var jsonData = JSON.parse(data);
+        // datapackage routes
+        routes(jsonData);
+    }
+
+    function routes(data){
+        var action = data.action;
+        switch(action){
+            case 'draw' : clientDraw(data) ; break;
+            case 'quit' : delUserDraw(data) ; break;
+            case 'onlineNum' : onlineNum(data) ; break;
+            default : console.debug('datapackage invalid!!!!!');break;
+        }
+    }
+
+    function clientDraw(data){
+        var elementID = 'draw' + data.fd;
+        if (elementExistByID(elementID)) {
+            var data = data.data;
+            $('#'+elementID).attr({src: data});
+        }else{
+            createUserDraw(elementID);
+        }
+    }
+
+    function delUserDraw(data){
+        var elementID = 'draw' + data.fd;
+        $('#'.elementID).remove();
+    }
+
+    function onlineNum(data){
+        $('#onlineNum').text(data.data);
+    }
+
+
+    function elementExistByID(elementID){
+        if ( $("#"+elementID).length > 0 ) {
+            return true;
+        }else{
+            return false;
+        }
+    }
+
+    function createUserDraw(elementID){
+        var element = '<img class="col-md-3" id="'+elementID+'" src="" style="height:300px;width:300px;">';
+        $("#livearea").append(element);
+    }
+</script>
+<script type="text/javascript" charset="utf-8">
+    $(document).ready(function(){
+        var serverhost = '120.27.117.52';
+        var port = 10001;
+        var socket = new WebSocket("ws://"+serverhost+":"+port);
+        socket.onerror = function(){
+            $("#reminderServer").show();
+        }
+        socket.onmessage =  function(evt){
+            console.debug(evt);
+            receive(evt.data);
+        }
+        socket.onopen = function(evt){
+        }
+        var video = document.getElementsByTagName('video')[0];
+        var back = document.getElementById('output');
+        var backcontext = back.getContext('2d');
+        var draw = function(){
+            backcontext.drawImage(video,0,0,back.width, back.height);
+            try{
+                backcontext.drawImage(video,0,0, back.width, back.height);
+            }catch(e){
+                if (e.name == "NS_ERROR_NOT_AVAILABLE") {
+                    return setTimeout(draw, 200);
+                } else {
+                    throw e;
+                }
+            }
+            if(video.src){
+                socket.send(back.toDataURL("image/jpeg", 0.5));
+            }
+            setTimeout(draw, 200);
+        }
+        var success = function(stream){
+            $("#reminderCameraSuccess").show();
+            videoSrc = window.URL.createObjectURL(stream);
+            video.src = videoSrc;
+            draw();
+        }
+        var error = function(error){
+            $("#reminderCamera").show();
+        }
+        navigator.getUserMedia = navigator.getUserMedia || navigator.webkitGetUserMedia ||
+        navigator.mozGetUserMedia || navigator.msGetUserMedia;
+        navigator.getUserMedia({video:true, audio:false}, success, error);
+    });
+</script>
