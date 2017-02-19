@@ -2,9 +2,9 @@
 <head>
     <meta http-equiv="content-type" content="text/html; charset=utf-8">
     <title>live camera</title>
-    <link href="/web/resource/bootstrap3.3.0.css" rel="stylesheet">
-    <script src="/web/resource/jquery3.1.0.js"></script>
-    <script src="/web/resource/bootsrtap3.3.0.js"></script>
+    <link href="/resource/bootstrap3.3.0.css" rel="stylesheet">
+    <script src="/resource/jquery3.1.0.js"></script>
+    <script src="/resource/bootsrtap3.3.0.js"></script>
     <style type="text/css">
         video{
             height: 300px;
@@ -47,8 +47,8 @@
             <div class="col-md-12 column">
                 <nav class="navbar navbar-default" role="navigation">
                     <div class="navbar-header">
-                    <span class="navbar-brand">Aaron Live Room</span>
-                    <span class="navbar-brand">Now Online Number Is <span id="onlineNum">....</span></span>
+                    <span class="navbar-brand">Aaron 直播间</span>
+                    <span class="navbar-brand">当前在线人数： <span id="onlineNum">....</span></span>
                     </div>
                     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
                     </div>
@@ -56,7 +56,6 @@
             </div>
             <div id="livearea" class="col-md-12">
                 <div class="col-md-3" >
-                    <div class="alert alert-success">ss</div>
                     <video autoplay id="sourcevid" style="border:solid;"></video>
                 </div>
             </div>
@@ -117,7 +116,7 @@
     }
 
     function createUserDraw(elementID){
-        var element = '<img class="col-md-3" id="'+elementID+'" src="" style="height:300px;width:300px;">';
+        var element = '<div class="col-md-1"></div><div class="col-md-3" ><img class="col-md-3" id="'+elementID+'" src="" style="height:300px;width:300px;"></div>';
         $("#livearea").append(element);
     }
 </script>
